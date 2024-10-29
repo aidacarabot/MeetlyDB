@@ -1,7 +1,7 @@
 const { generarLlave } = require("../../utils/jwt");
 const User = require("../models/userModel");
 const Evento = require("../models/eventModel");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 //! Obtener todos los usuarios
 const getUsers = async (req, res) => {
@@ -90,9 +90,12 @@ const login = async (req, res) => {
     }
 
     const token = generarLlave(user._id);
+    user.password = undefined; // Ocultar la contraseña en la respuesta
+
     return res.status(200).json({ token, user });
   } catch (error) {
-    return res.status(400).json({ error: "Error al iniciar sesión" });
+    console.error("Error al iniciar sesión:", error);
+    return res.status(500).json({ error: "Error al iniciar sesión" });
   }
 };
 
@@ -101,8 +104,7 @@ const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Asegurar que el usuario autenticado solo pueda actualizar su propio perfil
-    if (req.user._id !== id) {
+    if (req.user._id.toString() !== id) {
       return res.status(403).json({ error: "No puedes modificar a alguien que no seas tú mismo" });
     }
 
@@ -113,14 +115,12 @@ const updateUser = async (req, res) => {
 
     const { username, email, password, avatar } = req.body;
 
-    // Validar formato del email si se proporciona
     if (email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return res.status(400).json({ error: "Formato de email no válido" });
       }
 
-      // Verificar si el email ya está en uso por otro usuario
       const existingEmail = await User.findOne({ email });
       if (existingEmail && existingEmail._id.toString() !== id) {
         return res.status(400).json({ error: "El email ya está en uso por otro usuario" });
@@ -129,11 +129,11 @@ const updateUser = async (req, res) => {
     }
 
     if (username) user.username = username;
-    if (password) user.password = password; // Se encripta automáticamente con el pre-save hook
+    if (password) user.password = password; // Será encriptada con el pre-save hook
     if (avatar) user.avatar = avatar;
 
     const updatedUser = await user.save();
-    updatedUser.password = undefined; // No devolver la contraseña en la respuesta
+    updatedUser.password = undefined;
 
     return res.status(200).json(updatedUser);
   } catch (error) {
@@ -148,18 +148,15 @@ const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Verificar que el ID proporcionado coincida con el del usuario autenticado
     if (id !== req.user._id.toString()) {
       return res.status(403).json({ error: "No tienes permiso para eliminar esta cuenta" });
     }
 
-    // Eliminar la cuenta del usuario autenticado
     await User.findByIdAndDelete(id);
-
     return res.status(200).json({ message: "Cuenta eliminada correctamente" });
   } catch (error) {
     console.error("Error al eliminar la cuenta:", error);
-    return res.status(400).json({ error: "Error al eliminar la cuenta" });
+    return res.status(500).json({ error: "Error al eliminar la cuenta" });
   }
 };
 

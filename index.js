@@ -15,9 +15,7 @@ app.use(express.json()); // Middleware para procesar JSON
 app.use("/api/v1/users",userRouter); //ruta usuarios
 app.use("/api/v1/events", eventRouter); //ruta eventos
 
-app.use("*", (req, res, next) => {
-  return res.status(404).json("Route Not Found");
-})
+app.use("*", (req, res) => res.status(404).json({ error: "Route Not Found" }));
 
 app.listen (3000, () => {
   console.log("http://localhost:3000");
