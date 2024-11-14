@@ -33,7 +33,12 @@ const getUserById = async (req, res) => {
 //! Registrar un nuevo usuario
 const register = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { fullName, username, email, password, confirmPassword, avatar } = req.body;
+
+    // Verificar si las contraseñas coinciden
+    if (password !== confirmPassword) {
+      return res.status(400).json({ error: "Las contraseñas no coinciden" });
+    }
 
     // Verificar si el formato del email es válido
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -50,11 +55,13 @@ const register = async (req, res) => {
       return res.status(400).json({ error: "El usuario o email ya existe" });
     }
 
-    // Crear el nuevo usuario
+    // Crear el nuevo usuario (sin incluir confirmPassword)
     const newUser = new User({
+      fullName,
       username,
       email,
       password, // Se encriptará automáticamente con el pre-save en el modelo
+      avatar: avatar || undefined // Si no se proporciona, se usará el valor por defecto
     });
 
     const user = await newUser.save();
@@ -62,13 +69,15 @@ const register = async (req, res) => {
     // No devolver la contraseña en la respuesta
     user.password = undefined;
 
-    return res.status(201).json(user);
+    return res.status(201).json({
+      message: "Usuario registrado exitosamente",
+      user
+    });
   } catch (error) {
     console.error("Error al registrar el usuario:", error);
     return res.status(500).json({ error: "Error al registrar el usuario" });
   }
 };
-
 
 
 //! Iniciar sesión (Login)
