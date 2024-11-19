@@ -1,8 +1,6 @@
 const { generarLlave } = require("../../utils/jwt");
 const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
-const upload = require("../../config/multerConfig");
-const multer = require('multer');
 
 //! Obtener todos los usuarios
 const getUsers = async (req, res) => {
@@ -33,54 +31,45 @@ const getUserById = async (req, res) => {
 
 //! Registrar un nuevo usuario
 const register = async (req, res) => {
-  upload.single('avatar')(req, res, async function(err) {
-    if (err instanceof multer.MulterError) {
-      return res.status(400).json({ error: "Error al subir el archivo" });
-    } else if (err) {
-      return res.status(500).json({ error: "Error del servidor al subir el archivo" });
+  try {
+    const { fullName, username, email, password, confirmPassword } = req.body;
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ error: "Las contraseñas no coinciden" });
     }
 
-    try {
-      const { fullName, username, email, password, confirmPassword } = req.body;
-
-      if (password !== confirmPassword) {
-        return res.status(400).json({ error: "Las contraseñas no coinciden" });
-      }
-
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: "Formato de email no válido" });
-      }
-
-      const userDuplicated = await User.findOne({
-        $or: [{ username }, { email }],
-      });
-
-      if (userDuplicated) {
-        return res.status(400).json({ error: "El usuario o email ya existe" });
-      }
-
-      const newUser = new User({
-        fullName,
-        username,
-        email,
-        password,
-        avatar: req.file ? req.file.filename : undefined
-      });
-
-      const user = await newUser.save();
-
-      user.password = undefined;
-
-      return res.status(201).json({
-        message: "Usuario registrado exitosamente",
-        user
-      });
-    } catch (error) {
-      console.error("Error al registrar el usuario:", error);
-      return res.status(500).json({ error: "Error al registrar el usuario" });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: "Formato de email no válido" });
     }
-  });
+
+    const userDuplicated = await User.findOne({
+      $or: [{ username }, { email }],
+    });
+
+    if (userDuplicated) {
+      return res.status(400).json({ error: "El usuario o email ya existe" });
+    }
+
+    const newUser = new User({
+      fullName,
+      username,
+      email,
+      password
+    });
+
+    const user = await newUser.save();
+
+    user.password = undefined;
+
+    return res.status(201).json({
+      message: "Usuario registrado exitosamente",
+      user
+    });
+  } catch (error) {
+    console.error("Error al registrar el usuario:", error);
+    return res.status(500).json({ error: "Error al registrar el usuario" });
+  }
 };
 
 
@@ -114,53 +103,44 @@ const login = async (req, res) => {
 
 //! Actualizar Usuario (tienes que estar login)
 const updateUser = async (req, res) => {
-  upload.single('avatar')(req, res, async function(err) {
-    if (err instanceof multer.MulterError) {
-      return res.status(400).json({ error: "Error al subir el archivo" });
-    } else if (err) {
-      return res.status(500).json({ error: "Error del servidor al subir el archivo" });
+  try {
+    const { id } = req.params;
+
+    if (req.user._id.toString() !== id) {
+      return res.status(403).json({ error: "No puedes modificar a alguien que no seas tú mismo" });
     }
 
-    try {
-      const { id } = req.params;
-
-      if (req.user._id.toString() !== id) {
-        return res.status(403).json({ error: "No puedes modificar a alguien que no seas tú mismo" });
-      }
-
-      const user = await User.findById(id);
-      if (!user) {
-        return res.status(404).json({ error: "Usuario no encontrado" });
-      }
-
-      const { username, email, password } = req.body;
-
-      if (email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-          return res.status(400).json({ error: "Formato de email no válido" });
-        }
-
-        const existingEmail = await User.findOne({ email });
-        if (existingEmail && existingEmail._id.toString() !== id) {
-          return res.status(400).json({ error: "El email ya está en uso por otro usuario" });
-        }
-        user.email = email;
-      }
-
-      if (username) user.username = username;
-      if (password) user.password = password; // Será encriptada con el pre-save hook
-      if (req.file) user.avatar = req.file.filename;
-
-      const updatedUser = await user.save();
-      updatedUser.password = undefined;
-
-      return res.status(200).json(updatedUser);
-    } catch (error) {
-      console.error("Error al actualizar el usuario:", error);
-      return res.status(500).json({ error: "Error al actualizar el usuario" });
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
     }
-  });
+
+    const { username, email, password } = req.body;
+
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Formato de email no válido" });
+      }
+
+      const existingEmail = await User.findOne({ email });
+      if (existingEmail && existingEmail._id.toString() !== id) {
+        return res.status(400).json({ error: "El email ya está en uso por otro usuario" });
+      }
+      user.email = email;
+    }
+
+    if (username) user.username = username;
+    if (password) user.password = password; // Será encriptada con el pre-save hook
+
+    const updatedUser = await user.save();
+    updatedUser.password = undefined;
+
+    return res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error("Error al actualizar el usuario:", error);
+    return res.status(500).json({ error: "Error al actualizar el usuario" });
+  }
 };
 
 
