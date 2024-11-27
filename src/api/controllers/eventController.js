@@ -1,3 +1,4 @@
+const { deleteImgCloudinary } = require("../../utils/deleteFile");
 const Evento = require("../models/eventModel");
 const User = require("../models/userModel");
 
@@ -72,17 +73,20 @@ const removeAttendance = async (req, res) => {
 //! CREAR UN EVENTO
 const createEvent = async (req, res) => {
   try {
-    const { title, img, description, location, date } = req.body;
+    const { title, description, location, date } = req.body;
 
-    // Validación del formato de la fecha
     const eventDate = new Date(date);
     if (isNaN(eventDate.getTime()) || eventDate < new Date()) {
       return res.status(400).json({ error: "Fecha inválida o en el pasado" });
     }
 
+    if (!req.file) {
+      return res.status(400).json({ error: "La imagen es obligatoria" });
+    }
+
     const newEvent = new Evento({
       title,
-      img,
+      img: req.file.path, // La URL de Cloudinary proporcionada por multer
       description,
       location,
       date: eventDate,
@@ -90,10 +94,10 @@ const createEvent = async (req, res) => {
     });
 
     const event = await newEvent.save();
-    return res.status(201).json(event);
+    res.status(201).json(event);
   } catch (error) {
     console.error("Error al crear el evento:", error);
-    return res.status(400).json({ error: "Error al crear evento" });
+    res.status(400).json({ error: "Error al crear evento" });
   }
 };
 
@@ -123,10 +127,13 @@ const deleteEvent = async (req, res) => {
       return res.status(403).json({ error: "No autorizado para eliminar este evento" });
     }
 
+    // Eliminar imagen asociada al evento en Cloudinary
+    deleteImgCloudinary(event.img);
+
     await Evento.findByIdAndDelete(eventId);
-    return res.status(200).json({ message: "Evento eliminado" });
+    res.status(200).json({ message: "Evento eliminado" });
   } catch (error) {
-    return res.status(400).json({ error: "Error al eliminar evento" });
+    res.status(400).json({ error: "Error al eliminar evento" });
   }
 };
 

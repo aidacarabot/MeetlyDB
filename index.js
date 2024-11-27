@@ -4,10 +4,12 @@ const { connectDB } = require("./src/config/db");
 const userRouter = require("./src/api/routes/userRoute");
 const eventRouter = require("./src/api/routes/eventRoute");
 const cors = require("cors");
+const { connectCloudinary } = require("./src/config/cloudinary");
 
 const app = express();
 
 connectDB();
+connectCloudinary();
 
 app.use(cors());
 app.use(express.json()); // Middleware para procesar JSON
