@@ -189,6 +189,35 @@ const getAttendingEvents = async (req, res) => {
   }
 };
 
+//! LISTAR EVENTOS CREADOS POR EL USUARIO AUTENTICADO
+const getMyCreatedEvents = async (req, res) => {
+  try {
+    const events = await Evento.find({ organizer: req.user._id })
+      .populate("organizer", "username") // Popular el organizador con su nombre de usuario
+      .populate("attendees", "username"); // Popular los asistentes con sus nombres de usuario
+
+    if (!events || events.length === 0) {
+      return res.status(404).json({ message: "No has creado ningún evento aún." });
+    }
+
+    const eventsWithDetails = events.map(event => ({
+      id: event._id,
+      title: event.title,
+      img: event.img,
+      description: event.description,
+      location: event.location,
+      date: event.date,
+      organizer: event.organizer.username, // Nombre del organizador
+      attendeesCount: event.attendees.length, // Número de asistentes
+    }));
+
+    return res.status(200).json(eventsWithDetails);
+  } catch (error) {
+    console.error("Error al obtener eventos creados por el usuario:", error);
+    return res.status(500).json({ error: "Error al obtener los eventos creados por el usuario." });
+  }
+};
+
 module.exports = {
   createEvent,
   getEvents,
@@ -196,5 +225,6 @@ module.exports = {
   removeAttendance,
   deleteEvent,
   getAttendees,
-  getAttendingEvents
+  getAttendingEvents,
+  getMyCreatedEvents
 };
