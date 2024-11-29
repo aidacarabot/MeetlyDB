@@ -108,10 +108,29 @@ const getEvents = async (req, res) => {
       .populate("organizer", "username") // Popular el organizador con su nombre de usuario
       .populate("attendees", "username"); // Popular los asistentes con su nombre de usuario
 
-    return res.status(200).json(events);
+    // Validar que todos los eventos tengan organizador
+    const eventsWithDetails = events.map(event => {
+      if (!event.organizer || !event.organizer.username) {
+        throw new Error(`El evento "${event.title}" no tiene un organizador válido.`);
+      }
+
+      return {
+        id: event._id,
+        title: event.title,
+        img: event.img,
+        description: event.description,
+        location: event.location,
+        date: event.date,
+        organizer: event.organizer.username, // Siempre mostramos el nombre del organizador
+        attendeesCount: event.attendees.length, // Número de asistentes
+        attendees: event.attendees.map(att => att.username), // Lista de nombres de asistentes
+      };
+    });
+
+    return res.status(200).json(eventsWithDetails); // Enviar eventos con la información adicional
   } catch (error) {
     console.error("Error al obtener eventos:", error);
-    return res.status(400).json({ error: "Error al obtener eventos" });
+    return res.status(500).json({ error: error.message || "Error al obtener eventos" });
   }
 };
 
