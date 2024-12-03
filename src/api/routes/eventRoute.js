@@ -8,7 +8,8 @@ const {
   getAttendingEvents, 
   deleteEvent, 
   getAttendees, 
-  getMyCreatedEvents 
+  getMyCreatedEvents,
+  getEventByTitle
 } = require("../controllers/eventController");
 const { upload } = require("../../middlewares/file");
 
@@ -24,6 +25,7 @@ eventRouter.get("/attend", isAuth, getAttendingEvents); // Obtener los eventos a
 eventRouter.delete("/:eventId", isAuth, deleteEvent); // Eliminar un evento (solo el organizador)
 eventRouter.get("/:eventId/attendees", isAuth, getAttendees); // Obtener los asistentes de un evento (solo el organizador)
 eventRouter.get("/created", isAuth, getMyCreatedEvents); // Obtener eventos creados por el usuario autenticado
+eventRouter.get("/:eventTitle", getEventByTitle); // Obtener un evento por título (público)
 
 // Exportamos el router
 module.exports = eventRouter;

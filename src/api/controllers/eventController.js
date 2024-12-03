@@ -218,6 +218,32 @@ const getMyCreatedEvents = async (req, res) => {
   }
 };
 
+//! OBTENER UN EVENTO POR SU NOMBRE (TÍTULO)
+const getEventByTitle = async (req, res) => {
+  try {
+    // Recuperar el nombre del evento desde los parámetros de la URL
+    const { eventTitle } = req.params;
+
+    // Convertir guiones a espacios
+    const formattedTitle = eventTitle.replace(/-/g, " ");
+
+    // Buscar el evento por título
+    const event = await Evento.findOne({ title: formattedTitle })
+      .populate("organizer", "username") // Popular el organizador
+      .populate("attendees", "username"); // Popular los asistentes
+
+    if (!event) {
+      return res.status(404).json({ error: "Evento no encontrado" });
+    }
+
+    // Enviar la respuesta con el evento encontrado
+    return res.status(200).json(event);
+  } catch (error) {
+    console.error("Error al obtener el evento:", error);
+    return res.status(500).json({ error: "Error al obtener el evento" });
+  }
+};
+
 module.exports = {
   createEvent,
   getEvents,
@@ -226,5 +252,6 @@ module.exports = {
   deleteEvent,
   getAttendees,
   getAttendingEvents,
-  getMyCreatedEvents
+  getMyCreatedEvents,
+  getEventByTitle
 };
