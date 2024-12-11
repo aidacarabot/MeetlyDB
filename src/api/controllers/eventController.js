@@ -101,11 +101,12 @@ const createEvent = async (req, res) => {
 
     const newEvent = new Evento({
       title,
-      img: req.file.path, // La URL de Cloudinary proporcionada por multer
+      img: req.file.path, // URL de Cloudinary
       description,
       location,
       date: eventDate,
-      organizer: req.user._id,
+      organizer: req.user._id, // Organizador
+      attendees: [req.user._id], // Añadimos al creador como asistente
     });
 
     const event = await newEvent.save();
