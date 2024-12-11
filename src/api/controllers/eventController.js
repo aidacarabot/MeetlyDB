@@ -124,7 +124,7 @@ const getEvents = async (req, res) => {
       .populate("attendees", "username"); // Popular los asistentes con su nombre de usuario
 
     // Validar que todos los eventos tengan organizador
-    const eventsWithDetails = events.map(event => {
+    const eventsWithDetails = events.map((event) => {
       if (!event.organizer || !event.organizer.username) {
         throw new Error(`El evento "${event.title}" no tiene un organizador válido.`);
       }
@@ -136,9 +136,9 @@ const getEvents = async (req, res) => {
         description: event.description,
         location: event.location,
         date: event.date,
-        organizer: event.organizer.username, // Siempre mostramos el nombre del organizador
+        organizer: event.organizer.username, // Nombre del organizador
         attendeesCount: event.attendees.length, // Número de asistentes
-        attendees: event.attendees.map(att => att.username), // Lista de nombres de asistentes
+        attendees: event.attendees.map((att) => att._id.toString()), // Lista de IDs de asistentes
       };
     });
 
