@@ -5,27 +5,42 @@ const User = require("../models/userModel");
 //! REGISTRAR ASISTENCIA
 const addAttendance = async (req, res) => {
   try {
+    console.log("Inicio de addAttendance");
+    console.log("Usuario autenticado:", req.user);
+    console.log("ID del evento recibido:", req.params.eventId);
+
     const { eventId } = req.params;
 
     // Buscar el evento por ID
     const event = await Evento.findById(eventId);
     if (!event) {
+      console.error("Evento no encontrado");
       return res.status(404).json({ error: "Evento no encontrado" });
     }
 
+    console.log("Evento encontrado:", event);
+
     // Verificar si el usuario ya está registrado
     if (event.attendees.includes(req.user._id)) {
+      console.error("El usuario ya está registrado en este evento");
       return res.status(400).json({ error: "Ya estás registrado en este evento" });
     }
 
     // Agregar el usuario al evento
     event.attendees.push(req.user._id);
     await event.save();
+    console.log("Usuario agregado al evento");
 
     // Agregar el evento al usuario
     const user = await User.findById(req.user._id);
+    if (!user) {
+      console.error("Usuario no encontrado");
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
     user.events.push(eventId);
     await user.save();
+    console.log("Evento agregado al usuario");
 
     return res.status(200).json({ message: "Registrado al evento exitosamente" });
   } catch (error) {
