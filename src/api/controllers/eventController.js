@@ -193,15 +193,18 @@ const getAttendees = async (req, res) => {
 //! LISTAR TODOS LOS EVENTOS QUE HAS REGISTRADO ASISTENCIA
 const getAttendingEvents = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate("events", "title location description");
+    // Encuentra el usuario y popula todos los campos del modelo `events`
+    const user = await User.findById(req.user._id).populate("events", "title location description img date");
 
     if (!user) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
+    // Devuelve todos los eventos a los que el usuario está asistiendo
     return res.status(200).json(user.events);
   } catch (error) {
-    return res.status(400).json({ error: "Error al obtener los eventos" });
+    console.error("Error al obtener los eventos asistidos:", error);
+    return res.status(400).json({ error: "Error al obtener los eventos asistidos" });
   }
 };
 
