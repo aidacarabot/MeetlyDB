@@ -8,6 +8,10 @@ Meetly is a full-stack event management platform that allows users to easily cre
 
 The project is built with JavaScript, Node.js, Express, and MongoDB, providing a robust backend and dynamic frontend.
 
+## 🔗 GitHub Repositories
+- Frontend: [https://github.com/aidacarabot/MeetlyFront](https://github.com/aidacarabot/MeetlyFront)
+- Backend: [https://github.com/aidacarabot/MeetlyDB](https://github.com/aidacarabot/MeetlyDB)
+
 ## 🛠️ Technologies Used
 - Frontend: JavaScript, React (assumed from structure, please confirm if React)
 - Backend: Node.js, Express
