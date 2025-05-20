@@ -1,37 +1,56 @@
-# 📚 API Documentation - Users & Events 🎉
+# Meetly - Event Management Platform 🎉
 
-Este documento describe los endpoints disponibles en el backend para la gestión de Users y Events, facilitando la integración con el frontend. 🚀
+## 🌐 Web
+[https://project-meetly-app.vercel.app/](https://project-meetly-app.vercel.app/)
 
-## 📋 Tabla de Endpoints
+## 📖 Description
+Meetly is a full-stack event management platform that allows users to easily create, manage, and join events. It features user authentication, event creation and management, and an intuitive interface for seamless interaction.
 
-### 👥 Users
+The project is built with JavaScript, Node.js, Express, and MongoDB, providing a robust backend and dynamic frontend.
 
-| NAME | METHOD | ENDPOINT | AUTH | BODY | CONTENT-TYPE | RESPONSE |
-|------|--------|----------|------|------|--------------|----------|
-| **Get All Users** 👨‍👩‍👧‍👦 | GET | `/api/v1/users` | ❌ No | N/A | `application/json` | `[ { "id", "fullName", "username", "email", "events" } ]` |
-| **Get User by ID** 🔍 | GET | /api/v1/users/:id | ❌ No | N/A | `application/json` | `{ "id", "fullName", "username", "email", "events" }` |
-| **Register User** 📝 | POST | `/api/v1/users/register` | ❌ No | {` "fullName", "username", "email", "password", "confirmPassword" }` | `application/json` | `{ "message": "Usuario registrado exitosamente", "user": { "id", "fullName", "username", "email" } }` |
-| **Login User** 🔐 | POST | `/api/v1/users/login` | ❌ No | {` "usernameOrEmail", "password" }` | `application/json` | `{ "token", "user": { "id", "fullName", "username", "email" } }` |
-| **Update User** ✏️ | PUT | `/api/v1/users/update/:id` | ✅ Yes | {` "username", "email", "password" }` | `application/json` | `{ "id", "username", "email", "events" }` |
-| **Delete User** 🗑️ | DELETE | `/api/v1/users/delete/:id` | ✅ Yes | N/A | `application/json` | `{ "message": "Cuenta eliminada correctamente" }` |
+## 🛠️ Technologies Used
+- Frontend: JavaScript, React (assumed from structure, please confirm if React)
+- Backend: Node.js, Express
+- Database: MongoDB
+- Authentication: JWT (JSON Web Tokens)
+- Hosting: Possibly MongoDB Atlas
 
-### 🎭 Events
+## 🚀 Main Features
+- User registration, login, and update with secure JWT authentication.
+- Event creation, viewing, editing, and deletion.
+- Users can register to attend events and remove their attendance.
+- Only event organizers can delete events or view the list of attendees.
+- View events a user is attending.
+- RESTful API with clearly defined endpoints for users and events.
 
-| NAME | METHOD | ENDPOINT | AUTH | BODY | CONTENT-TYPE | RESPONSE |
-|------|--------|----------|------|------|--------------|----------|
-| **Get All Events** 📅 | GET | `/api/v1/events` | ❌ No | N/A | `application/json` | `[ { "id", "title", "location", "date", "organizer" } ]` |
-| **Create Event** 🎊 | POST | `/api/v1/events` | ✅ Yes | `{ "title", "img", "description", "location", "date" }` | `application/json` | `{ "id", "title", "description", "location", "date", "organizer" }` |
-| **Attend Event** 🙋‍♂️ | POST | `/api/v1/events/attend/:eventId` | ✅ Yes | N/A | `application/json` | `{ "message": "Registrado al evento exitosamente" }` |
-| **Remove Attendance** 🚫 | DELETE | `/api/v1/events/attend/:eventId` | ✅ Yes | N/A | `application/json` | `{ "message": "Asistencia eliminada exitosamente" }` |
-| **Get Attending Events** 📆 | GET | `/api/v1/events/attend` | ✅ Yes | N/A | `application/json` | `[ { "id", "title", "location", "description" } ]` |
-| **Delete Event** 🗑️ | DELETE | `/api/v1/events/:eventId` | ✅ Yes (Only Organizer) | N/A | `application/json` | `{ "message": "Evento eliminado" }` |
-| **Get Event Attendees** 👥 | GET | `/api/v1/events/:eventId/attendees` | ✅ Yes (Only Organizer) | N/A | `application/json` | `[ { "id", "username", "email" } ]` |
+## 📋 Backend API - Main Endpoints
 
-## 🌟 Ejemplos de Requests y Responses
-### 📝 **Registro de Usuario**
-- **Endpoint:** `/api/v1/users/register`
-- **Body:**
+### Users
+| Action                   | Method | Endpoint                   | Auth Required | Description                             |
+|--------------------------|--------|----------------------------|---------------|---------------------------------------|
+| Get all users            | GET    | `/api/v1/users`             | No            | List all users                        |
+| Get user by ID           | GET    | `/api/v1/users/:id`         | No            | Get user details                     |
+| Register user            | POST   | `/api/v1/users/register`    | No            | Register a new user                  |
+| Login                   | POST   | `/api/v1/users/login`       | No            | Login and get JWT token              |
+| Update user             | PUT    | `/api/v1/users/update/:id`  | Yes           | Update user data                    |
+| Delete user             | DELETE | `/api/v1/users/delete/:id`  | Yes           | Delete user account                  |
+
+### Events
+| Action                  | Method | Endpoint                    | Auth Required           | Description                         |
+|-------------------------|--------|-----------------------------|-------------------------|-----------------------------------|
+| Get all events          | GET    | `/api/v1/events`             | No                      | List all events                   |
+| Create new event        | POST   | `/api/v1/events`             | Yes                     | Create a new event                |
+| Attend event            | POST   | `/api/v1/events/attend/:eventId` | Yes                 | Register attendance to event     |
+| Remove attendance       | DELETE | `/api/v1/events/attend/:eventId` | Yes                 | Cancel attendance                |
+| Get attended events     | GET    | `/api/v1/events/attend`      | Yes                     | Get events the user is attending  |
+| Delete event            | DELETE | `/api/v1/events/:eventId`    | Yes (Organizer only)     | Delete event (only organizer)    |
+| Get event attendees     | GET    | `/api/v1/events/:eventId/attendees` | Yes (Organizer only) | List event attendees             |
+
+## 💻 Usage Examples
+
+### User Registration
 ```json
+POST /api/v1/users/register
 {
   "fullName": "Test User",
   "username": "testuser",
@@ -40,66 +59,28 @@ Este documento describe los endpoints disponibles en el backend para la gestión
   "confirmPassword": "123456"
 }
 ```
-  
-  
-- **Response:**
-```json
-  {
-    "message": "Usuario registrado exitosamente",
-    "user": {
-      "id": "63bfc4e5b4b0a1234a5",
-      "fullName": "Test User",
-      "username": "testuser",
-      "email": "test@example.com"
-    }
-  }
-```
-  
-### **🔐 Inicio de Sesión**
-- **Endpoint:** `/api/v1/users/login`
-- **Body:**
- ```json
-  {
-    "usernameOrEmail": "test@example.com",
-    "password": "123456"
-  }
-  ```
-  
-- **Response:**
 
+### User Login
 ```json
-  {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "user": {
-      "id": "63bfc4e5b4b0a1234a5",
-      "fullName": "Test User",
-      "username": "testuser",
-      "email": "test@example.com"
-    }
-  }
-```
-  
-## **🎊 Creación de Evento**
-- **Endpoint:** `/api/v1/events`
-- **Body:**
-```json
-  {
-    "title": "Concierto en Vivo",
-    "img": "https://image.url",
-    "description": "Un evento increíble",
-    "location": "Auditorio Nacional",
-    "date": "2024-12-10T20:00:00Z"
-  }
-```
-  
-- **Response:**
-```json
+POST /api/v1/users/login
 {
-    "id": "63bfd8e5b4b0a6789c",
-    "title": "Concierto en Vivo",
-    "description": "Un evento increíble",
-    "location": "Auditorio Nacional",
-    "date": "2024-12-10T20:00:00Z",
-    "organizer": "63bfc4e5b4b0a1234a5"
-  }
-  ````
+  "usernameOrEmail": "test@example.com",
+  "password": "123456"
+}
+```
+
+### Create Event
+```json
+POST /api/v1/events
+{
+  "title": "Live Concert",
+  "img": "https://image.url",
+  "description": "An amazing event",
+  "location": "National Auditorium",
+  "date": "2024-12-10T20:00:00Z"
+}
+```
+
+## 🔒 Security
+- Uses JWT to protect private routes.
+- Token validation for restricted access.
